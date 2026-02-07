@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  rag-system:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: rag-system-docling
+    volumes:
+      - ../data:/app/data
+      - ../src:/app/src
+      - ../scripts:/app/scripts
+    environment:
+      - LOG_LEVEL=INFO
+      - OUTPUT_FORMAT=markdown
+      - EXPORT_TABLES=true
+    command: tail -f /dev/null

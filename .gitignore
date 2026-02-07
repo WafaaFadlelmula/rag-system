@@ -205,3 +205,42 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Environment
+.env
+
+# Data
+data/raw/*.pdf
+data/processed/*
+data/chunks/*
+
+# IDEs
+.vscode/
+.idea/
+
+# MLflow
+mlflow/
+mlruns/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# uv
+.uv/
+uv.lock
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/

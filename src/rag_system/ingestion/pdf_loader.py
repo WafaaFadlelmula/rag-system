@@ -67,64 +67,70 @@ class DoclingPDFLoader:
         logger.info(f"Initialized Docling loader for: {self.pdf_path.name}")
     
     def extract_content(self) -> DocumentContent:
-        """Extract structured content from PDF.
-        
-        Returns:
-            DocumentContent object with all extracted information
-        """
-        try:
-            logger.info(f"Converting {self.pdf_path.name} with Docling...")
+            """Extract structured content from PDF.
             
-            # Convert document
-            result = self.converter.convert(str(self.pdf_path))
-            
-            # Export to different formats
-            markdown_content = result.document.export_to_markdown()
-            json_structure = result.document.export_to_dict()
-            
-            # Extract tables if available
-            tables = []
-            if self.extract_tables and hasattr(result.document, 'tables'):
-                for table in result.document.tables:
-                    tables.append({
-                        "data": table.export_to_dataframe().to_dict() if hasattr(table, 'export_to_dataframe') else {},
-                        "caption": getattr(table, 'caption', ''),
-                        "page": getattr(table, 'page', None)
-                    })
-            
-            # Extract page-level content
-            page_contents = []
-            if hasattr(result.document, 'pages'):
-                for page in result.document.pages:
-                    page_contents.append({
-                        "page_number": page.page_no,
-                        "text": page.export_to_markdown() if hasattr(page, 'export_to_markdown') else str(page),
-                        "size": getattr(page, 'size', None)
-                    })
-            
-            # Get metadata
-            metadata = self.get_metadata()
-            metadata.has_tables = len(tables) > 0
-            
-            content = DocumentContent(
-                filename=self.pdf_path.name,
-                markdown=markdown_content,
-                json_structure=json_structure,
-                metadata=metadata,
-                tables=tables,
-                page_contents=page_contents
-            )
-            
-            logger.info(f"Successfully extracted content from {self.pdf_path.name}")
-            logger.info(f"  - Pages: {len(page_contents)}")
-            logger.info(f"  - Tables: {len(tables)}")
-            logger.info(f"  - Markdown length: {len(markdown_content)} chars")
-            
-            return content
-            
-        except Exception as e:
-            logger.error(f"Error extracting content from {self.pdf_path}: {e}")
-            raise
+            Returns:
+                DocumentContent object with all extracted information
+            """
+            try:
+                logger.info(f"Converting {self.pdf_path.name} with Docling...")
+                
+                # Convert document
+                result = self.converter.convert(str(self.pdf_path))
+                
+                # Export to different formats
+                markdown_content = result.document.export_to_markdown()
+                json_structure = result.document.export_to_dict()
+                
+                # Extract tables if available
+                tables = []
+                if self.extract_tables:
+                    try:
+                        for table in result.document.tables:
+                            tables.append({
+                                "data": table.export_to_dataframe(result.document).to_dict() if hasattr(table, 'export_to_dataframe') else {},
+                                "caption": getattr(table, 'caption', ''),
+                                "page": getattr(table, 'page', None)
+                            })
+                    except Exception as e:
+                        logger.warning(f"Could not extract tables: {e}")
+                
+                # Extract page-level content
+                page_contents = []
+                try:
+                    if hasattr(result.document, 'pages'):
+                        for idx, page in enumerate(result.document.pages):
+                            page_contents.append({
+                                "page_number": idx + 1,  # Use index instead of page.page_no
+                                "text": page.export_to_markdown() if hasattr(page, 'export_to_markdown') else str(page),
+                                "size": getattr(page, 'size', None)
+                            })
+                except Exception as e:
+                    logger.warning(f"Could not extract page contents: {e}")
+                
+                # Get metadata
+                metadata = self.get_metadata()
+                metadata.has_tables = len(tables) > 0
+                
+                content = DocumentContent(
+                    filename=self.pdf_path.name,
+                    markdown=markdown_content,
+                    json_structure=json_structure,
+                    metadata=metadata,
+                    tables=tables,
+                    page_contents=page_contents
+                )
+                
+                logger.info(f"Successfully extracted content from {self.pdf_path.name}")
+                logger.info(f"  - Pages: {len(page_contents)}")
+                logger.info(f"  - Tables: {len(tables)}")
+                logger.info(f"  - Markdown length: {len(markdown_content)} chars")
+                
+                return content
+                
+            except Exception as e:
+                logger.error(f"Error extracting content from {self.pdf_path}: {e}")
+                raise
     
     def get_metadata(self) -> DocumentMetadata:
         """Get metadata about the PDF document.

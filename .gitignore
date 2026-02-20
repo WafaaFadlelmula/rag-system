@@ -247,3 +247,11 @@ htmlcov/
 
 frontend/__pycache__/
 frontend/assets/
+
+
+# Data — never commit
+data/raw/
+data/processed/
+data/chunks/
+data/embeddings/
+data/qdrant/

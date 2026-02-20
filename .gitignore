@@ -244,3 +244,6 @@ uv.lock
 .pytest_cache/
 .coverage
 htmlcov/
+
+frontend/__pycache__/
+frontend/assets/

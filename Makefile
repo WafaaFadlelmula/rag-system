@@ -32,6 +32,12 @@ populate:
 test-retrieval:
 	uv run python scripts/test_retrieval.py
 
+ask:
+	uv run python scripts/ask.py
+
+ask-stream:
+	uv run python scripts/ask.py --stream
+
 pipeline: ingest chunk
 
 docker-build:

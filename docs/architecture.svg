@@ -1,0 +1,243 @@
+<svg viewBox="0 0 1060 740" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#09151f"/>
+      <stop offset="100%" style="stop-color:#0c1e2d"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00838f"/>
+      <stop offset="100%" style="stop-color:#00BCD4"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#112233"/>
+      <stop offset="100%" style="stop-color:#0d1c28"/>
+    </linearGradient>
+    <linearGradient id="accentCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f2a3d"/>
+      <stop offset="100%" style="stop-color:#0a1e2d"/>
+    </linearGradient>
+    <linearGradient id="statsBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f2535"/>
+      <stop offset="100%" style="stop-color:#091520"/>
+    </linearGradient>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#00BCD4"/>
+    </marker>
+    <marker id="arrDim" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#1e4a5e"/>
+    </marker>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.8" fill="#ffffff" opacity="0.04"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1060" height="740" fill="url(#bgGrad)"/>
+  <rect width="1060" height="740" fill="url(#dots)"/>
+  <rect x="0" y="0" width="1060" height="3" fill="url(#tealGrad)"/>
+  <rect x="0" y="737" width="1060" height="3" fill="url(#tealGrad)"/>
+
+  <!-- Title -->
+  <circle cx="38" cy="38" r="5" fill="#00BCD4" filter="url(#glow)"/>
+  <text x="56" y="32" font-size="20" font-weight="700" fill="#ffffff" letter-spacing="0.5">RAG System</text>
+  <text x="56" y="52" font-size="11" fill="#00BCD4" letter-spacing="3" font-weight="500">ARCHITECTURE</text>
+
+  <!-- Stage rail -->
+  <rect x="18" y="80" width="6" height="110" rx="3" fill="#00BCD4" opacity="0.6"/>
+  <text x="10" y="142" font-size="9" fill="#00BCD4" font-weight="600" letter-spacing="2.5" transform="rotate(-90,10,142)" text-anchor="middle">INGESTION</text>
+  <rect x="18" y="300" width="6" height="200" rx="3" fill="#4DD0E1" opacity="0.45"/>
+  <text x="10" y="402" font-size="9" fill="#4DD0E1" font-weight="600" letter-spacing="2.5" transform="rotate(-90,10,402)" text-anchor="middle">RETRIEVAL</text>
+  <rect x="18" y="518" width="6" height="90" rx="3" fill="#80DEEA" opacity="0.35"/>
+  <text x="10" y="566" font-size="9" fill="#80DEEA" font-weight="600" letter-spacing="2.5" transform="rotate(-90,10,566)" text-anchor="middle">GENERATION</text>
+  <rect x="18" y="626" width="6" height="86" rx="3" fill="#B2EBF2" opacity="0.25"/>
+  <text x="10" y="672" font-size="9" fill="#B2EBF2" font-weight="600" letter-spacing="2.5" transform="rotate(-90,10,672)" text-anchor="middle">INTERFACE</text>
+
+  <!-- ═══ ROW 1: INGESTION ═══ -->
+
+  <!-- PDF Documents -->
+  <rect x="40" y="82" width="138" height="108" rx="11" fill="url(#cardGrad)" stroke="#00BCD4" stroke-width="1.2" stroke-opacity="0.45" filter="url(#softShadow)"/>
+  <text x="109" y="110" text-anchor="middle" font-size="22">📄</text>
+  <text x="109" y="133" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">PDF Documents</text>
+  <text x="109" y="151" text-anchor="middle" font-size="9.5" fill="#7ab3c4">Source Reports</text>
+  <text x="109" y="167" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Milestone Reports</text>
+  <line x1="180" y1="136" x2="200" y2="136" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+
+  <!-- Docling Parser -->
+  <rect x="202" y="82" width="138" height="108" rx="11" fill="url(#cardGrad)" stroke="#00BCD4" stroke-width="1.2" stroke-opacity="0.45" filter="url(#softShadow)"/>
+  <text x="271" y="110" text-anchor="middle" font-size="22">🔍</text>
+  <text x="271" y="133" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Docling Parser</text>
+  <text x="271" y="151" text-anchor="middle" font-size="9.5" fill="#7ab3c4">AI PDF Parsing</text>
+  <text x="271" y="167" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Tables · Layout · Structure</text>
+  <line x1="342" y1="136" x2="362" y2="136" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+
+  <!-- Hybrid Chunker -->
+  <rect x="364" y="82" width="138" height="108" rx="11" fill="url(#cardGrad)" stroke="#00BCD4" stroke-width="1.2" stroke-opacity="0.45" filter="url(#softShadow)"/>
+  <text x="433" y="110" text-anchor="middle" font-size="22">✂️</text>
+  <text x="433" y="133" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Hybrid Chunker</text>
+  <text x="433" y="151" text-anchor="middle" font-size="9.5" fill="#7ab3c4">Semantic + Fixed-size</text>
+  <text x="433" y="167" text-anchor="middle" font-size="8.5" fill="#3a6a7a">800 tok · 150 overlap</text>
+  <line x1="504" y1="136" x2="524" y2="136" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+
+  <!-- Embeddings -->
+  <rect x="526" y="82" width="138" height="108" rx="11" fill="url(#cardGrad)" stroke="#00BCD4" stroke-width="1.2" stroke-opacity="0.45" filter="url(#softShadow)"/>
+  <text x="595" y="110" text-anchor="middle" font-size="22">🧠</text>
+  <text x="595" y="133" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Embeddings</text>
+  <text x="595" y="151" text-anchor="middle" font-size="9.5" fill="#7ab3c4">text-embedding-3-small</text>
+  <text x="595" y="167" text-anchor="middle" font-size="8.5" fill="#3a6a7a">1536 dims · 428 chunks</text>
+  <line x1="666" y1="136" x2="686" y2="136" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+
+  <!-- Qdrant -->
+  <rect x="688" y="82" width="138" height="108" rx="11" fill="url(#accentCard)" stroke="#00BCD4" stroke-width="2" filter="url(#glow)"/>
+  <rect x="688" y="82" width="138" height="4" rx="2" fill="url(#tealGrad)"/>
+  <text x="757" y="112" text-anchor="middle" font-size="22">🗄️</text>
+  <text x="757" y="133" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Qdrant</text>
+  <text x="757" y="151" text-anchor="middle" font-size="10" fill="#00BCD4" font-weight="600">Vector Database</text>
+  <text x="757" y="167" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Docker · Persistent</text>
+
+  <!-- ═══ SEPARATOR ═══ -->
+  <line x1="40" y1="212" x2="870" y2="212" stroke="#1a3a4a" stroke-width="1" stroke-dasharray="5,4"/>
+  <rect x="436" y="204" width="88" height="16" rx="8" fill="#091520"/>
+  <text x="480" y="215" text-anchor="middle" font-size="9" fill="#2a6070" letter-spacing="2">QUERY TIME</text>
+
+  <!-- ═══ USER QUERY  (y=228) ═══ -->
+  <rect x="380" y="228" width="200" height="52" rx="11" fill="url(#tealGrad)" filter="url(#softShadow)"/>
+  <text x="480" y="251" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">💬  User Query</text>
+  <text x="480" y="268" text-anchor="middle" font-size="10" fill="#e0f7fa">Natural language question</text>
+
+  <!-- Query → Vector Search: go down to y=300, elbow left to x=175 -->
+  <polyline points="440,280 440,300 175,300 175,320"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,2"/>
+
+  <!-- Query → BM25: go down to y=300, elbow right to x=585 -->
+  <polyline points="520,280 520,300 585,300 585,320"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,2"/>
+
+  <!-- ═══ ROW 2: RETRIEVAL ═══ -->
+
+  <!-- Vector Search -->
+  <rect x="80" y="320" width="190" height="90" rx="11" fill="url(#cardGrad)" stroke="#4DD0E1" stroke-width="1.2" stroke-opacity="0.5" filter="url(#softShadow)"/>
+  <text x="175" y="348" text-anchor="middle" font-size="20">🔎</text>
+  <text x="175" y="369" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Vector Search</text>
+  <text x="175" y="386" text-anchor="middle" font-size="9.5" fill="#7ab3c4">Semantic similarity · Qdrant</text>
+  <text x="175" y="400" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Top-20 candidates</text>
+
+  <!-- BM25 Search -->
+  <rect x="490" y="320" width="190" height="90" rx="11" fill="url(#cardGrad)" stroke="#4DD0E1" stroke-width="1.2" stroke-opacity="0.5" filter="url(#softShadow)"/>
+  <text x="585" y="348" text-anchor="middle" font-size="20">🔤</text>
+  <text x="585" y="369" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">BM25 Search</text>
+  <text x="585" y="386" text-anchor="middle" font-size="9.5" fill="#7ab3c4">Keyword matching · rank-bm25</text>
+  <text x="585" y="400" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Exact technical terms</text>
+
+  <!-- Cross-Encoder Reranker -->
+  <rect x="720" y="320" width="190" height="90" rx="11" fill="url(#cardGrad)" stroke="#4DD0E1" stroke-width="1.2" stroke-opacity="0.5" filter="url(#softShadow)"/>
+  <text x="815" y="348" text-anchor="middle" font-size="20">🎯</text>
+  <text x="815" y="369" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Cross-Encoder Reranker</text>
+  <text x="815" y="386" text-anchor="middle" font-size="9.5" fill="#7ab3c4">ms-marco-MiniLM-L-6-v2</text>
+  <text x="815" y="400" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Local CPU · Final top-k</text>
+
+  <!-- Qdrant feeds Vector Search -->
+  <polyline points="757,190 757,248 175,248 175,318"
+            fill="none" stroke="#1e4a5e" stroke-width="1" marker-end="url(#arrDim)" stroke-dasharray="3,3"/>
+
+  <!-- ═══ RRF FUSION (y=448) ═══ -->
+  <!-- Vector → RRF -->
+  <polyline points="175,410 175,436 380,436 380,448"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- BM25 → RRF -->
+  <polyline points="585,410 585,436 580,436 580,448"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="250" y="448" width="460" height="66" rx="11" fill="url(#accentCard)" stroke="#00BCD4" stroke-width="1.5" filter="url(#softShadow)"/>
+  <rect x="250" y="448" width="460" height="4" rx="2" fill="url(#tealGrad)"/>
+  <text x="480" y="476" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">⚡  Reciprocal Rank Fusion (RRF)</text>
+  <text x="480" y="494" text-anchor="middle" font-size="10" fill="#7ab3c4">Merges vector + keyword results into unified ranking · Top-10</text>
+  <text x="480" y="509" text-anchor="middle" font-size="9" fill="#3a6a7a">score(d) = Σ 1 / (k + rank(d))</text>
+
+  <!-- RRF → Reranker (right elbow) -->
+  <polyline points="712,481 815,481 815,412"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,2"/>
+
+  <!-- ═══ GENERATION (y=528) ═══ -->
+
+  <!-- Reranker feeds Context via top route -->
+  <polyline points="815,320 815,292 430,292 430,528"
+            fill="none" stroke="#1e4a5e" stroke-width="1" marker-end="url(#arrDim)" stroke-dasharray="3,3"/>
+
+  <!-- RRF → Context (straight down) -->
+  <line x1="480" y1="514" x2="480" y2="528" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Context Builder -->
+  <rect x="330" y="528" width="180" height="66" rx="11" fill="url(#cardGrad)" stroke="#80DEEA" stroke-width="1.2" stroke-opacity="0.4" filter="url(#softShadow)"/>
+  <text x="420" y="554" text-anchor="middle" font-size="20">📝</text>
+  <text x="420" y="574" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Context Builder</text>
+  <text x="420" y="588" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Prompt + Top-K chunks</text>
+
+  <!-- Context → GPT -->
+  <line x1="512" y1="561" x2="548" y2="561" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+
+  <!-- GPT-4o-mini -->
+  <rect x="550" y="528" width="180" height="66" rx="11" fill="url(#accentCard)" stroke="#00BCD4" stroke-width="2" filter="url(#glow)"/>
+  <rect x="550" y="528" width="180" height="4" rx="2" fill="url(#tealGrad)"/>
+  <text x="640" y="556" text-anchor="middle" font-size="20">✨</text>
+  <text x="640" y="574" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">GPT-4o-mini</text>
+  <text x="640" y="588" text-anchor="middle" font-size="9" fill="#00BCD4" font-weight="600">Answer Generation</text>
+
+  <!-- ═══ INTERFACE (y=636) ═══ -->
+  <!-- GPT → FastAPI -->
+  <polyline points="590,594 590,618 380,618 380,636"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+  <!-- GPT → Streamlit -->
+  <polyline points="690,594 690,618 760,618 760,636"
+            fill="none" stroke="#00BCD4" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="3,2"/>
+
+  <!-- FastAPI -->
+  <rect x="270" y="636" width="220" height="60" rx="11" fill="url(#cardGrad)" stroke="#B2EBF2" stroke-width="1.2" stroke-opacity="0.3" filter="url(#softShadow)"/>
+  <text x="380" y="660" text-anchor="middle" font-size="18">⚡</text>
+  <text x="380" y="679" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">FastAPI</text>
+  <text x="380" y="691" text-anchor="middle" font-size="8.5" fill="#3a6a7a">REST API · Port 8000</text>
+
+  <!-- Streamlit -->
+  <rect x="650" y="636" width="220" height="60" rx="11" fill="url(#cardGrad)" stroke="#B2EBF2" stroke-width="1.2" stroke-opacity="0.3" filter="url(#softShadow)"/>
+  <text x="760" y="660" text-anchor="middle" font-size="18">🖥️</text>
+  <text x="760" y="679" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Streamlit UI</text>
+  <text x="760" y="691" text-anchor="middle" font-size="8.5" fill="#3a6a7a">Chat Interface · Port 8501</text>
+
+  <!-- ═══ STATS PANEL ═══ -->
+  <rect x="900" y="82" width="142" height="320" rx="12" fill="url(#statsBg)" stroke="#1a3a4a" stroke-width="1"/>
+  <rect x="900" y="82" width="142" height="4" rx="2" fill="url(#tealGrad)"/>
+  <text x="971" y="106" text-anchor="middle" font-size="10" font-weight="700" fill="#00BCD4" letter-spacing="1">STATS</text>
+  <line x1="912" y1="114" x2="1030" y2="114" stroke="#1a3a4a" stroke-width="1"/>
+  <text x="912" y="134" font-size="9" fill="#4a7a8a">Documents</text>
+  <text x="1030" y="134" text-anchor="end" font-size="10" font-weight="700" fill="#ffffff">8</text>
+  <text x="912" y="156" font-size="9" fill="#4a7a8a">Chunks</text>
+  <text x="1030" y="156" text-anchor="end" font-size="10" font-weight="700" fill="#ffffff">428</text>
+  <text x="912" y="178" font-size="9" fill="#4a7a8a">Avg tokens</text>
+  <text x="1030" y="178" text-anchor="end" font-size="10" font-weight="700" fill="#ffffff">395</text>
+  <text x="912" y="200" font-size="9" fill="#4a7a8a">Vector dims</text>
+  <text x="1030" y="200" text-anchor="end" font-size="10" font-weight="700" fill="#ffffff">1536</text>
+  <line x1="912" y1="212" x2="1030" y2="212" stroke="#1a3a4a" stroke-width="1"/>
+  <text x="912" y="232" font-size="9" fill="#4a7a8a">Embed cost</text>
+  <text x="1030" y="232" text-anchor="end" font-size="10" font-weight="700" fill="#00BCD4">$0.003</text>
+  <text x="912" y="254" font-size="9" fill="#4a7a8a">Per query</text>
+  <text x="1030" y="254" text-anchor="end" font-size="10" font-weight="700" fill="#00BCD4">~$0.0004</text>
+  <line x1="912" y1="266" x2="1030" y2="266" stroke="#1a3a4a" stroke-width="1"/>
+  <text x="912" y="286" font-size="9" fill="#4a7a8a">Retrieval</text>
+  <text x="1030" y="286" text-anchor="end" font-size="9" font-weight="600" fill="#ffffff">Hybrid</text>
+  <text x="912" y="306" font-size="9" fill="#4a7a8a">Reranker</text>
+  <text x="1030" y="306" text-anchor="end" font-size="9" font-weight="600" fill="#ffffff">MiniLM-L6</text>
+  <text x="912" y="326" font-size="9" fill="#4a7a8a">LLM</text>
+  <text x="1030" y="326" text-anchor="end" font-size="9" font-weight="600" fill="#ffffff">GPT-4o-mini</text>
+  <text x="912" y="346" font-size="9" fill="#4a7a8a">Vector DB</text>
+  <text x="1030" y="346" text-anchor="end" font-size="9" font-weight="600" fill="#ffffff">Qdrant</text>
+  <line x1="912" y1="358" x2="1030" y2="358" stroke="#1a3a4a" stroke-width="1"/>
+  <text x="971" y="376" text-anchor="middle" font-size="8" fill="#2a5a6a">uv · Docker · FastAPI</text>
+  <text x="971" y="392" text-anchor="middle" font-size="8" fill="#2a5a6a">Streamlit · Python 3.10</text>
+
+</svg>

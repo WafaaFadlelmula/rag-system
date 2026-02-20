@@ -112,13 +112,13 @@ class ResponseGenerator:
     # Answer (blocking)
     # ------------------------------------------------------------------
 
-    def answer(self, question: str) -> RAGResponse:
+    def answer(self, question: str, top_k: int = 5) -> RAGResponse:
         """Run the full RAG pipeline and return a structured response."""
 
         # 1. Retrieve
         vector_results  = self.retriever.retrieve(question)
         hybrid_results  = self.hybrid.search(question, vector_results)
-        final_chunks    = self.reranker.rerank(question, hybrid_results)
+        final_chunks    = self.reranker.rerank(question, hybrid_results, top_k=top_k)
 
         # 2. Build context
         context = build_context(final_chunks, max_chunks=self.context_chunks)
@@ -141,20 +141,15 @@ class ResponseGenerator:
     # Stream answer (token by token)
     # ------------------------------------------------------------------
 
-    def stream_answer(self, question: str) -> tuple[Iterator[str], list[dict]]:
+    def stream_answer(self, question: str, top_k: int = 5) -> tuple[Iterator[str], list[dict]]:
         """
         Stream the answer token by token.
         Returns (token_iterator, source_chunks) — sources are available immediately.
-
-        Usage:
-            tokens, sources = gen.stream_answer("What is C-PON?")
-            for token in tokens:
-                print(token, end="", flush=True)
         """
         # Retrieval (non-streaming)
         vector_results = self.retriever.retrieve(question)
         hybrid_results = self.hybrid.search(question, vector_results)
-        final_chunks   = self.reranker.rerank(question, hybrid_results)
+        final_chunks   = self.reranker.rerank(question, hybrid_results, top_k=top_k)
 
         context = build_context(final_chunks, max_chunks=self.context_chunks)
         user_prompt = RAG_PROMPT_TEMPLATE.format(context=context, question=question)

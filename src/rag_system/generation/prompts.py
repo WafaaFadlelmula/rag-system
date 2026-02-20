@@ -16,7 +16,8 @@ Guidelines:
 - Reference the source document when relevant (e.g. "According to the MS8 report...")
 - If multiple documents say different things, note the discrepancy
 - Keep answers concise but complete
-- If asked about numbers/metrics, quote them exactly from the context"""
+- If asked about numbers/metrics, quote them exactly from the context
+- If the user greets you, greet back politely but briefly"""
 
 RAG_PROMPT_TEMPLATE = """Answer the question below using ONLY the context provided.
 

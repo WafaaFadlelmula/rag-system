@@ -61,13 +61,14 @@ class CrossEncoderReranker:
                     "Install with: uv add sentence-transformers"
                 )
 
-    def rerank(self, query: str, candidates: list[dict]) -> list[dict]:
+    def rerank(self, query: str, candidates: list[dict], top_k: int = None) -> list[dict]:
         """
         Rerank candidate chunks by relevance to the query.
 
         Args:
             query: Original user query
             candidates: List of chunk dicts (from hybrid search or vector search)
+            top_k: Override default top_k from config
 
         Returns:
             Top-k chunks sorted by reranker score (highest first),
@@ -76,6 +77,7 @@ class CrossEncoderReranker:
         if not candidates:
             return []
 
+        k = top_k if top_k is not None else self.cfg.top_k
         self._load_model()
 
         # Prepare (query, passage) pairs for the cross-encoder
@@ -95,7 +97,7 @@ class CrossEncoderReranker:
             scored.append(c)
 
         scored.sort(key=lambda x: x["rerank_score"], reverse=True)
-        top = scored[: self.cfg.top_k]
+        top = scored[:k]
 
         logger.info(
             f"Reranking complete. Top score: {top[0]['rerank_score']:.4f}, "

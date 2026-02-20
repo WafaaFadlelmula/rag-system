@@ -64,7 +64,7 @@ async def query(request: Request, body: QueryRequest):
 
     try:
         logger.info(f"Query: {body.question[:80]}")
-        response = gen.answer(body.question)
+        response = gen.answer(body.question, top_k=body.top_k)
 
         return QueryResponse(
             question=response.question,

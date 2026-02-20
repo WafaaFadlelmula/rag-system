@@ -41,6 +41,9 @@ ask-stream:
 serve:
 	uv run python scripts/serve.py
 
+streamlit:
+	uv run streamlit run frontend/streamlit_app.py --server.port 8501
+
 pipeline: ingest chunk
 
 docker-build:

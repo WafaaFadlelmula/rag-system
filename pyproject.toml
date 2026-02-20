@@ -12,6 +12,8 @@ dependencies = [
     "qdrant-client>=1.16.2",
     "rank-bm25>=0.2.2",
     "sentence-transformers>=5.2.3",
+    "fastapi>=0.129.0",
+    "uvicorn>=0.41.0",
 ]
 
 [project.optional-dependencies]

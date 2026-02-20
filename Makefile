@@ -38,6 +38,9 @@ ask:
 ask-stream:
 	uv run python scripts/ask.py --stream
 
+serve:
+	uv run python scripts/serve.py
+
 pipeline: ingest chunk
 
 docker-build:

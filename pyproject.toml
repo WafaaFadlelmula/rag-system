@@ -8,6 +8,10 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
+    "openai>=2.21.0",
+    "qdrant-client>=1.16.2",
+    "rank-bm25>=0.2.2",
+    "sentence-transformers>=5.2.3",
 ]
 
 [project.optional-dependencies]

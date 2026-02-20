@@ -1,0 +1,8 @@
+{
+  "total_embedded": 428,
+  "embedding_model": "text-embedding-3-small",
+  "vector_dimensions": 1536,
+  "estimated_tokens": 169193,
+  "elapsed_seconds": 16.78,
+  "chunks_per_second": 25.5
+}

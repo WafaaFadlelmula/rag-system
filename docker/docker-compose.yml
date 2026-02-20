@@ -15,3 +15,13 @@ services:
       - OUTPUT_FORMAT=markdown
       - EXPORT_TABLES=true
     command: tail -f /dev/null
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"   # REST API + dashboard
+      - "6334:6334"   # gRPC
+    volumes:
+      - ../data/qdrant:/qdrant/storage   # persists data to data/qdrant/
+    restart: unless-stopped

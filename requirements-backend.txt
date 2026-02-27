@@ -1,0 +1,33 @@
+# requirements-backend.txt — FastAPI server (Render / Railway / Fly.io)
+# ─────────────────────────────────────────────────────────────────────────────
+# Production API dependencies only.
+# Does NOT include docling (PDF parsing — ingestion pipeline only)
+# or streamlit (frontend only).
+#
+# Memory note: sentence-transformers pulls in PyTorch CPU (~350 MB).
+# The total RSS at runtime is ~500-700 MB.
+# Render free tier = 512 MB — recommend the Starter plan ($7/mo) to be safe.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# API framework
+fastapi==0.129.0
+uvicorn==0.41.0
+
+# OpenAI (LLM + embeddings)
+openai==2.21.0
+httpx==0.28.1
+
+# Vector database
+qdrant-client==1.16.2
+
+# Retrieval
+rank-bm25==0.2.2
+sentence-transformers==5.2.3
+numpy==2.2.6
+
+# Data validation
+pydantic==2.12.5
+pydantic-settings==2.12.0
+
+# Environment
+python-dotenv==1.2.1

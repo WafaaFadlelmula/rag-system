@@ -6,17 +6,27 @@ Run from project root:
     python scripts/populate_vectordb.py
 
 Reads:   data/embeddings/embeddings.json
-Writes:  Qdrant collection (persisted to data/qdrant/)
+Writes:  Qdrant collection
 
-Requires:
-    Qdrant running in Docker:
-        docker-compose -f docker/docker-compose.yml up -d
+Connection is controlled by environment variables — the same ones used by the
+FastAPI server, so you can use a .env file or export them in your shell:
+
+    Local Docker (default):
+        No env vars needed — connects to localhost:6333
+
+    Qdrant Cloud:
+        QDRANT_URL=https://<cluster-id>.cloud.qdrant.io:6333
+        QDRANT_API_KEY=<your-api-key>
 """
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
+
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / ".env")   # load .env before reading os.environ
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,6 +36,7 @@ logging.basicConfig(
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from qdrant_client import QdrantClient
 from rag_system.vectorstore.store import QdrantConfig
 from rag_system.vectorstore.indexer import VectorIndexer
 
@@ -37,13 +48,20 @@ EMBEDDINGS_FILE = PROJECT_ROOT / "data" / "embeddings" / "embeddings.json"
 STATS_FILE      = PROJECT_ROOT / "data" / "embeddings" / "vectordb_stats.json"
 
 # ---------------------------------------------------------------------------
-# Config
+# Connection config from environment
 # ---------------------------------------------------------------------------
+QDRANT_URL     = os.environ.get("QDRANT_URL") or None
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") or None
+QDRANT_HOST    = os.environ.get("QDRANT_HOST", "localhost")
+QDRANT_PORT    = int(os.environ.get("QDRANT_PORT", "6333"))
+
 config = QdrantConfig(
-    host="localhost",
-    port=6333,
+    host=QDRANT_HOST,
+    port=QDRANT_PORT,
+    url=QDRANT_URL,
+    api_key=QDRANT_API_KEY,
     collection_name="rag_chunks",
-    vector_size=1536,       # must match your embedding dimensions
+    vector_size=1536,
     default_top_k=5,
 )
 
@@ -60,15 +78,24 @@ def main():
 
     # Check Qdrant is reachable before doing anything
     try:
-        from qdrant_client import QdrantClient
-        client = QdrantClient(host=config.host, port=config.port)
+        if QDRANT_URL:
+            client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+            target = QDRANT_URL
+        else:
+            client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+            target = f"{QDRANT_HOST}:{QDRANT_PORT}"
         client.get_collections()
-        print(f"✅ Qdrant is running at {config.host}:{config.port}")
+        print(f"✅ Qdrant is reachable at {target}")
     except Exception as e:
-        print(f"❌ Cannot connect to Qdrant at {config.host}:{config.port}")
-        print(f"   Error: {e}")
-        print(f"\n   Start Qdrant with:")
-        print(f"   docker-compose -f docker/docker-compose.yml up -d")
+        if QDRANT_URL:
+            print(f"❌ Cannot connect to Qdrant Cloud at {QDRANT_URL}")
+            print(f"   Error: {e}")
+            print(f"\n   Check that QDRANT_URL and QDRANT_API_KEY are set correctly.")
+        else:
+            print(f"❌ Cannot connect to Qdrant at {QDRANT_HOST}:{QDRANT_PORT}")
+            print(f"   Error: {e}")
+            print(f"\n   Start local Qdrant with:")
+            print(f"   docker-compose -f docker/docker-compose.yml up -d")
         sys.exit(1)
 
     # Build index
@@ -81,14 +108,14 @@ def main():
         json.dump(stats, f, indent=2)
 
     # Summary
+    target_ui = f"{QDRANT_URL}/dashboard" if QDRANT_URL else f"http://localhost:{QDRANT_PORT}/dashboard"
     print("\n" + "=" * 55)
     print("✅  VECTOR DB POPULATED")
     print("=" * 55)
-    print(f"  Collection   : {config.collection_name}")
+    print(f"  Collection    : {config.collection_name}")
     print(f"  Points indexed: {stats['total_indexed']}")
-    print(f"  DB status    : {stats['collection']['status']}")
-    print(f"\n  Qdrant UI    : http://localhost:6333/dashboard")
-    print(f"\n  Next step → Step 5: Build the retrieval system")
+    print(f"  DB status     : {stats['collection']['status']}")
+    print(f"\n  Dashboard     : {target_ui}")
     print("=" * 55)
 
 

@@ -33,12 +33,20 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class QdrantConfig:
+    # ── Local Docker mode (default) ──────────────────────────────────────────
     host: str = "localhost"
     port: int = 6333
+    # ── Qdrant Cloud mode ────────────────────────────────────────────────────
+    # Set url + api_key to connect to Qdrant Cloud instead of a local instance.
+    #   url     = "https://<cluster-id>.cloud.qdrant.io:6333"
+    #   api_key = "<your-qdrant-api-key>"
+    # When url is set, host and port are ignored.
+    url: Optional[str] = None
+    api_key: Optional[str] = None
+    # ─────────────────────────────────────────────────────────────────────────
     collection_name: str = "rag_chunks"
     vector_size: int = 1536          # must match embedding dimensions
     distance: Distance = Distance.COSINE
-    # How many results to return by default
     default_top_k: int = 5
 
 
@@ -59,8 +67,12 @@ class QdrantVectorStore:
 
     def __init__(self, config: Optional[QdrantConfig] = None):
         self.cfg = config or QdrantConfig()
-        self.client = QdrantClient(host=self.cfg.host, port=self.cfg.port)
-        logger.info(f"Connected to Qdrant at {self.cfg.host}:{self.cfg.port}")
+        if self.cfg.url:
+            self.client = QdrantClient(url=self.cfg.url, api_key=self.cfg.api_key)
+            logger.info(f"Connected to Qdrant Cloud at {self.cfg.url}")
+        else:
+            self.client = QdrantClient(host=self.cfg.host, port=self.cfg.port)
+            logger.info(f"Connected to Qdrant at {self.cfg.host}:{self.cfg.port}")
 
     # ------------------------------------------------------------------
     # Collection management

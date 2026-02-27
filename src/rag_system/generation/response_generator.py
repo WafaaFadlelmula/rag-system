@@ -85,9 +85,14 @@ class ResponseGenerator:
         chunks_path: Path,
         qdrant_host: str = "localhost",
         qdrant_port: int = 6333,
+        qdrant_url: Optional[str] = None,
+        qdrant_api_key: Optional[str] = None,
         context_chunks: int = 5,
     ) -> "ResponseGenerator":
-        """Convenience factory — builds the full pipeline from just an API key and chunks path."""
+        """Convenience factory — builds the full pipeline from just an API key and chunks path.
+
+        For Qdrant Cloud pass qdrant_url + qdrant_api_key; host/port are then ignored.
+        """
 
         # Load chunks for BM25
         with open(chunks_path) as f:
@@ -99,7 +104,12 @@ class ResponseGenerator:
         retriever = VectorRetriever(
             api_key=api_key,
             embedding_config=EmbeddingConfig(model="text-embedding-3-small"),
-            qdrant_config=QdrantConfig(host=qdrant_host, port=qdrant_port),
+            qdrant_config=QdrantConfig(
+                host=qdrant_host,
+                port=qdrant_port,
+                url=qdrant_url,
+                api_key=qdrant_api_key,
+            ),
             retriever_config=RetrieverConfig(top_k=20),
         )
 

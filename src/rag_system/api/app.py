@@ -32,9 +32,12 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # rag-system/
 CHUNKS_FILE  = PROJECT_ROOT / "data" / "chunks" / "chunks.json"
 
-API_KEY      = os.environ.get("OPENAI_API_KEY", "")
-QDRANT_HOST  = os.environ.get("QDRANT_HOST", "localhost")
-QDRANT_PORT  = int(os.environ.get("QDRANT_PORT", "6333"))
+API_KEY        = os.environ.get("OPENAI_API_KEY", "")
+QDRANT_HOST    = os.environ.get("QDRANT_HOST", "localhost")
+QDRANT_PORT    = int(os.environ.get("QDRANT_PORT", "6333"))
+# Qdrant Cloud — when QDRANT_URL is set, QDRANT_HOST / QDRANT_PORT are ignored
+QDRANT_URL     = os.environ.get("QDRANT_URL") or None
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") or None
 
 
 # ---------------------------------------------------------------------------
@@ -51,6 +54,8 @@ async def lifespan(app: FastAPI):
         chunks_path=CHUNKS_FILE,
         qdrant_host=QDRANT_HOST,
         qdrant_port=QDRANT_PORT,
+        qdrant_url=QDRANT_URL,
+        qdrant_api_key=QDRANT_API_KEY,
     )
     logger.info("RAG pipeline ready")
     yield

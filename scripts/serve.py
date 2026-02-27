@@ -28,10 +28,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import uvicorn
 
 if __name__ == "__main__":
+    # Render (and most PaaS) injects the port via $PORT; default to 8000 locally.
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
         "rag_system.api.app:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=False,
         log_level="info",
     )

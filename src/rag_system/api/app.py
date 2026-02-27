@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routes import router
 from ..generation.response_generator import ResponseGenerator
+from ..monitoring.database import init_db
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,8 @@ QDRANT_PORT  = int(os.environ.get("QDRANT_PORT", "6333"))
 async def lifespan(app: FastAPI):
     """Load the RAG pipeline on startup, clean up on shutdown."""
     logger.info("Initialising RAG pipeline...")
+    init_db()
+    logger.info("Monitoring database ready")
     app.state.generator = ResponseGenerator.from_config(
         api_key=API_KEY,
         chunks_path=CHUNKS_FILE,

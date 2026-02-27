@@ -255,3 +255,5 @@ data/processed/
 data/chunks/
 data/embeddings/
 data/qdrant/
+# Streamlit secrets — never commit (add via Streamlit Cloud UI instead)
+.streamlit/secrets.toml

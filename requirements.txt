@@ -1,0 +1,14 @@
+# requirements.txt — Streamlit Community Cloud (frontend only)
+# ─────────────────────────────────────────────────────────────────────────────
+# Streamlit Community Cloud installs from this file.  It runs ONLY the
+# Streamlit frontend; the FastAPI backend must be hosted separately.
+#
+# Do NOT add docling, sentence-transformers, qdrant-client, uvicorn, etc.
+# here — those belong to the backend and are defined in pyproject.toml.
+# Adding them would balloon build time (500 MB+ of ML models) and likely
+# cause the Streamlit Cloud build to fail.
+# ─────────────────────────────────────────────────────────────────────────────
+
+streamlit==1.54.0
+requests==2.32.5
+pandas==2.3.3

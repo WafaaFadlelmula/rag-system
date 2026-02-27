@@ -2,30 +2,31 @@ services:
   - type: web
     name: ecoice-rag-api
     runtime: python
-    region: frankfurt          # same region as your Qdrant Cloud cluster (europe-west3)
+    region: frankfurt          # same region as Qdrant Cloud cluster (europe-west3)
 
     buildCommand: pip install -r requirements-backend.txt
 
-    # PYTHONPATH=src makes `rag_system` importable without an editable install
     startCommand: PYTHONPATH=src python scripts/serve.py
 
-    # Health-check endpoint — Render uses this to confirm the service is up
     healthCheckPath: /api/v1/health
 
     envVars:
       - key: PYTHONPATH
         value: src
 
-      # Set these in the Render dashboard — never commit real values here
+      # chunks.json is NOT in the repo (company data).
+      # Upload it via: Render dashboard → Environment → Secret Files
+      #   Mount path: /etc/secrets/chunks.json
+      #   Contents:   paste the contents of data/chunks/chunks.json
+      - key: CHUNKS_DATA_PATH
+        value: /etc/secrets/chunks.json
+
+      # Set these in Render dashboard → Environment → Environment Variables
       - key: OPENAI_API_KEY
-        sync: false            # "sync: false" = Render will prompt you to fill it in
+        sync: false
 
       - key: QDRANT_URL
         sync: false
 
       - key: QDRANT_API_KEY
         sync: false
-
-      # Optional: point monitoring DB at a persistent disk path
-      # - key: MONITORING_DB_PATH
-      #   value: /var/data/queries.db

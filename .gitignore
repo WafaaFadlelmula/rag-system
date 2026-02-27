@@ -257,5 +257,3 @@ data/qdrant/
 # Streamlit secrets — never commit (add via Streamlit Cloud UI instead)
 .streamlit/secrets.toml
 
-# Keep chunks.json — required by the FastAPI backend at runtime for BM25 indexing
-!data/chunks/chunks.json

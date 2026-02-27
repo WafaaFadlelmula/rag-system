@@ -30,7 +30,9 @@ logger = logging.getLogger(__name__)
 # Paths & config (from environment or defaults)
 # ---------------------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # rag-system/
-CHUNKS_FILE  = PROJECT_ROOT / "data" / "chunks" / "chunks.json"
+_default_chunks = PROJECT_ROOT / "data" / "chunks" / "chunks.json"
+# On Render: set CHUNKS_DATA_PATH to the Secret File path (e.g. /etc/secrets/chunks.json)
+CHUNKS_FILE  = Path(os.environ.get("CHUNKS_DATA_PATH", str(_default_chunks)))
 
 API_KEY        = os.environ.get("OPENAI_API_KEY", "")
 QDRANT_HOST    = os.environ.get("QDRANT_HOST", "localhost")

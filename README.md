@@ -15,12 +15,14 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system built for the
 | PDF Parsing | [Docling](https://github.com/DS4SD/docling) |
 | Chunking | Hybrid (Semantic + Fixed-size with overlap) |
 | Embeddings | OpenAI `text-embedding-3-small` |
-| Vector Database | [Qdrant](https://qdrant.tech/) (Docker) |
+| Vector Database | [Qdrant](https://qdrant.tech/) (Docker or Qdrant Cloud) |
 | Keyword Search | BM25 (`rank-bm25`) |
 | Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
 | LLM | OpenAI `gpt-4o-mini` |
 | API | FastAPI + Uvicorn |
-| Frontend | Streamlit |
+| Frontend | Streamlit (multipage) |
+| Monitoring | SQLite + Streamlit dashboard |
+| Deployment | Render (backend) + Streamlit Community Cloud (frontend) |
 | Package Manager | [uv](https://github.com/astral-sh/uv) |
 
 ---
@@ -43,7 +45,7 @@ rag-system/
 │   │   ├── embedding_model.py
 │   │   └── batch_processor.py
 │   ├── vectorstore/          # Qdrant integration
-│   │   ├── store.py          # Search and upsert
+│   │   ├── store.py          # Search and upsert (local + cloud)
 │   │   └── indexer.py        # Index builder
 │   ├── retrieval/            # Retrieval pipeline
 │   │   ├── retriever.py      # Vector search
@@ -53,9 +55,11 @@ rag-system/
 │   │   ├── llm_client.py     # OpenAI GPT-4o-mini client
 │   │   ├── response_generator.py  # Full RAG pipeline
 │   │   └── prompts.py        # Prompt templates
+│   ├── monitoring/           # Query monitoring layer
+│   │   └── database.py       # SQLite logging (init, log, flag)
 │   └── api/                  # FastAPI layer
 │       ├── app.py            # Application entry point
-│       ├── routes.py         # API endpoints
+│       ├── routes.py         # API endpoints (query + monitor)
 │       └── models.py         # Request/response models
 ├── scripts/
 │   ├── ingest_documents.py   # Step 1: Parse PDFs
@@ -66,11 +70,21 @@ rag-system/
 │   ├── serve.py              # Start FastAPI server
 │   └── ask.py                # CLI chat interface
 ├── frontend/
-│   └── streamlit_app.py      # Streamlit chat UI
+│   ├── streamlit_app.py      # Page 1 — Chat UI
+│   ├── auth.py               # Shared login gate helper
+│   └── pages/
+│       └── 2_Monitoring.py   # Page 2 — Monitoring dashboard
+├── data/
+│   └── monitoring/
+│       └── queries.db        # SQLite query log (auto-created, not in repo)
 ├── docker/
 │   └── docker-compose.yml    # Qdrant + app services
 ├── .streamlit/
-│   └── config.toml           # Streamlit theme
+│   ├── config.toml           # Streamlit theme (committed)
+│   └── secrets.toml          # Credentials — never commit
+├── requirements.txt          # Frontend deps for Streamlit Cloud
+├── requirements-backend.txt  # Backend deps for Render
+├── render.yaml               # Render deployment config
 ├── pyproject.toml
 ├── .env                      # API keys (never commit)
 └── Makefile
@@ -159,7 +173,10 @@ make streamlit
 
 Then open **http://localhost:8501** in your browser.
 
-The interactive API docs are available at **http://localhost:8333/docs**.
+- **Chat** — main page, ask questions over the documents
+- **Monitoring** — second page in the sidebar, shows the query log and cost dashboard
+
+The interactive API docs are available at **http://localhost:8000/docs**.
 
 ---
 
@@ -198,6 +215,52 @@ curl -X POST http://localhost:8000/api/v1/query \
   "cost_usd": 0.000449
 }
 ```
+
+---
+
+## Monitoring & Evaluation
+
+Every query is automatically logged to a local SQLite database (`data/monitoring/queries.db`) with no extra code needed. The monitoring dashboard is the second page in the Streamlit sidebar.
+
+### What gets logged
+
+| Field | Description |
+|---|---|
+| `timestamp` | UTC time of the request |
+| `question` | The user's question |
+| `answer` | The generated answer |
+| `sources` | Chunk sources returned (JSON) |
+| `latency_ms` | End-to-end response time |
+| `cost_usd` | OpenAI token cost for that query |
+| `prompt_tokens` | Tokens sent to the LLM |
+| `completion_tokens` | Tokens in the LLM response |
+| `top_reranker_score` | Score of the highest-ranked chunk |
+| `flagged` | Whether the response was flagged for review |
+
+> Streaming queries (`/query/stream`) log `cost_usd = null` because the OpenAI streaming API does not expose token counts.
+
+### Accessing the dashboard
+
+Open the **Monitoring** page from the Streamlit sidebar. It shows:
+
+- Summary metrics — total queries, cumulative cost, average latency, average reranker score, flagged count
+- Latency and reranker score charts over time
+- Full query log table with a **Flag for review** toggle per row
+
+### Flag for review
+
+Check the **Flag** box next to any query in the table and click **Save flag changes**. Flagged queries are highlighted and counted in the summary bar — useful for identifying answers that need prompt or retrieval tuning.
+
+### Monitoring API endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/monitor/queries` | Retrieve all logged queries |
+| `POST` | `/api/v1/monitor/flag/{id}` | Set or clear the flag on a query |
+
+### Database path
+
+The default path is `data/monitoring/queries.db` relative to the project root. Override it with the `MONITORING_DB_PATH` environment variable — useful when running on a cloud host with a persistent volume.
 
 ---
 
@@ -275,6 +338,84 @@ make ingest && make chunk && make embed && make populate
 ```
 
 > Note: `make populate` will skip recreating the collection by default. To force a full rebuild, change `recreate=False` to `recreate=True` in `scripts/populate_vectordb.py`.
+
+---
+
+## Deployment
+
+The system is split into two independently deployed services.
+
+### Backend — Render
+
+The FastAPI backend is deployed on [Render](https://render.com) using `render.yaml`. Configuration is picked up automatically when you connect the repo.
+
+**Environment variables to set in the Render dashboard:**
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_KEY` | Your OpenAI key |
+| `QDRANT_URL` | Qdrant Cloud cluster URL |
+| `QDRANT_API_KEY` | Qdrant Cloud API key |
+| `CHUNKS_DATA_PATH` | Path to chunks.json (see below) |
+
+**Sensitive data — chunks.json**
+
+`chunks.json` contains processed document text and is gitignored. On Render, use **Secret Files**:
+
+1. Render dashboard → your service → **Environment** → **Secret Files**
+2. Filename: `chunks.json` — Render mounts it at `/etc/secrets/chunks.json`
+3. Set `CHUNKS_DATA_PATH=/etc/secrets/chunks.json` in environment variables
+
+The app auto-detects `/etc/secrets/chunks.json` even if the env var is not set.
+
+**Build & start commands:**
+
+```
+Build:  pip install -r requirements-backend.txt
+Start:  PYTHONPATH=src python scripts/serve.py
+```
+
+### Frontend — Streamlit Community Cloud
+
+The Streamlit frontend is deployed on [Streamlit Community Cloud](https://share.streamlit.io).
+
+1. Connect the GitHub repo on share.streamlit.io
+2. Set **Main file path** to `frontend/streamlit_app.py`
+3. Under **Advanced settings → Secrets**, paste:
+
+```toml
+[auth]
+username = "admin"
+password = "your-password"
+
+[api]
+base_url = "https://your-render-service.onrender.com/api/v1"
+```
+
+Secrets added after deployment take effect immediately on the next reboot — no redeploy needed.
+
+### Authentication
+
+All Streamlit pages are protected by a login gate (`frontend/auth.py`). If `[auth]` is absent from secrets (local dev), the gate is skipped automatically. In production, the username and password are read from `st.secrets["auth"]`.
+
+### Qdrant Cloud
+
+To use Qdrant Cloud instead of local Docker, set:
+
+```env
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=your-qdrant-api-key
+```
+
+The vector store automatically switches between local Docker and Qdrant Cloud based on whether `QDRANT_URL` is set.
+
+### Live URLs
+
+| Service | URL |
+|---|---|
+| FastAPI backend | https://rag-system-80pu.onrender.com |
+| API docs (Swagger) | https://rag-system-80pu.onrender.com/docs |
+| Streamlit frontend | *(your Streamlit Cloud URL)* |
 
 ---
 

@@ -83,8 +83,10 @@ rag-system/
 │   ├── config.toml           # Streamlit theme (committed)
 │   └── secrets.toml          # Credentials — never commit
 ├── requirements.txt          # Frontend deps for Streamlit Cloud
-├── requirements-backend.txt  # Backend deps for Render
+├── requirements-backend.txt  # Backend deps for Render / Docker
 ├── render.yaml               # Render deployment config
+├── Dockerfile                # Backend container image
+├── .dockerignore
 ├── pyproject.toml
 ├── .env                      # API keys (never commit)
 └── Makefile
@@ -366,6 +368,7 @@ Cohere free tier: **1,000 rerank calls/month** — sufficient for a project demo
 | `QDRANT_API_KEY` | Qdrant Cloud API key |
 | `COHERE_API_KEY` | Cohere Rerank API key (free at dashboard.cohere.com) |
 | `CHUNKS_DATA_PATH` | Path to chunks.json (see below) |
+| `API_BEARER_TOKEN` | Bearer token protecting `/query` and `/monitor` endpoints — generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
 
 **Sensitive data — chunks.json**
 
@@ -399,13 +402,18 @@ password = "your-password"
 
 [api]
 base_url = "https://your-render-service.onrender.com/api/v1"
+bearer_token = "your-api-bearer-token"
 ```
 
 Secrets added after deployment take effect immediately on the next reboot — no redeploy needed.
 
 ### Authentication
 
-All Streamlit pages are protected by a login gate (`frontend/auth.py`). If `[auth]` is absent from secrets (local dev), the gate is skipped automatically. In production, the username and password are read from `st.secrets["auth"]`.
+Two layers of authentication protect the system:
+
+1. **Streamlit login gate** (`frontend/auth.py`) — username/password form in front of all pages. Skipped automatically when `[auth]` is absent from secrets (local dev).
+
+2. **FastAPI bearer token** — the `/query` and `/monitor` endpoints require an `Authorization: Bearer <token>` header. Set `API_BEARER_TOKEN` in the Render dashboard and the matching `bearer_token` in the Streamlit secrets. When `API_BEARER_TOKEN` is unset the backend runs in open mode (suitable for local dev only).
 
 ### Qdrant Cloud
 
@@ -418,13 +426,51 @@ QDRANT_API_KEY=your-qdrant-api-key
 
 The vector store automatically switches between local Docker and Qdrant Cloud based on whether `QDRANT_URL` is set.
 
+### Docker (run anywhere)
+
+A `Dockerfile` is included for running the backend on any host that supports containers (AWS ECS, GCP Cloud Run, Railway, Fly.io, local Docker, etc.).
+
+**Build the image:**
+```bash
+docker build -t rag-api .
+```
+
+**Run with Qdrant Cloud:**
+```bash
+docker run -p 8000:8000 \
+  -e OPENAI_API_KEY=sk-... \
+  -e QDRANT_URL=https://your-cluster.cloud.qdrant.io \
+  -e QDRANT_API_KEY=your-qdrant-key \
+  -e COHERE_API_KEY=your-cohere-key \
+  -v /path/to/chunks.json:/data/chunks.json \
+  -e CHUNKS_DATA_PATH=/data/chunks.json \
+  rag-api
+```
+
+**Run with local Qdrant:**
+```bash
+# Start Qdrant first
+make vectordb-up
+
+docker run -p 8000:8000 \
+  -e OPENAI_API_KEY=sk-... \
+  -e QDRANT_HOST=host.docker.internal \
+  -e QDRANT_PORT=6333 \
+  -e COHERE_API_KEY=your-cohere-key \
+  -v /path/to/chunks.json:/data/chunks.json \
+  -e CHUNKS_DATA_PATH=/data/chunks.json \
+  rag-api
+```
+
+The image is ~200 MB (no PyTorch). `chunks.json` is never baked into the image — always mount it at runtime via `-v`.
+
 ### Live URLs
 
 | Service | URL |
 |---|---|
-| FastAPI backend | https://rag-system-80pu.onrender.com |
-| API docs (Swagger) | https://rag-system-80pu.onrender.com/docs |
-| Streamlit frontend | *(your Streamlit Cloud URL)* |
+| FastAPI backend | `https://your-service.onrender.com` |
+| API docs (Swagger) | `https://your-service.onrender.com/docs` |
+| Streamlit frontend | `https://your-app.streamlit.app` |
 
 ---
 

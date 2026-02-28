@@ -15,8 +15,9 @@ import json
 import logging
 import time
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Security
 from fastapi.responses import StreamingResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from .models import QueryRequest, QueryResponse, SourceChunk, HealthResponse, ErrorResponse
@@ -25,6 +26,27 @@ from ..monitoring.database import log_query, get_all_queries, flag_query
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# ---------------------------------------------------------------------------
+# Bearer-token auth dependency
+# ---------------------------------------------------------------------------
+_bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def _require_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Security(_bearer_scheme),
+) -> None:
+    """Check Authorization: Bearer <token>.
+
+    If API_BEARER_TOKEN is not set on the server (local dev), auth is skipped.
+    Otherwise any request without a matching token receives 401.
+    """
+    token: str | None = getattr(request.app.state, "api_bearer_token", None)
+    if token is None:
+        return  # auth disabled — local dev mode
+    if credentials is None or credentials.credentials != token:
+        raise HTTPException(status_code=401, detail="Invalid or missing API token")
 
 
 # ---------------------------------------------------------------------------
@@ -82,7 +104,8 @@ async def health(request: Request):
 # Query (blocking)
 # ---------------------------------------------------------------------------
 
-@router.post("/query", response_model=QueryResponse, tags=["RAG"])
+@router.post("/query", response_model=QueryResponse, tags=["RAG"],
+             dependencies=[Depends(_require_token)])
 async def query(request: Request, body: QueryRequest):
     """
     Ask a question and get a full answer with sources.
@@ -133,7 +156,8 @@ async def query(request: Request, body: QueryRequest):
 # Query (streaming SSE)
 # ---------------------------------------------------------------------------
 
-@router.post("/query/stream", tags=["RAG"])
+@router.post("/query/stream", tags=["RAG"],
+             dependencies=[Depends(_require_token)])
 async def query_stream(request: Request, body: QueryRequest):
     """
     Ask a question and stream the answer token by token (Server-Sent Events).
@@ -199,8 +223,9 @@ class FlagRequest(BaseModel):
     flagged: bool
 
 
-@router.get("/monitor/queries", tags=["Monitoring"])
-async def monitor_queries():
+@router.get("/monitor/queries", tags=["Monitoring"],
+            dependencies=[Depends(_require_token)])
+async def monitor_queries(request: Request):
     """Return all logged queries from the monitoring database."""
     try:
         return get_all_queries()
@@ -209,8 +234,9 @@ async def monitor_queries():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/monitor/flag/{query_id}", tags=["Monitoring"])
-async def monitor_flag(query_id: int, body: FlagRequest):
+@router.post("/monitor/flag/{query_id}", tags=["Monitoring"],
+             dependencies=[Depends(_require_token)])
+async def monitor_flag(request: Request, query_id: int, body: FlagRequest):
     """Set or clear the review flag on a logged query."""
     try:
         flag_query(query_id, body.flagged)

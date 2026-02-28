@@ -1,0 +1,31 @@
+# ── Never include in Docker image ─────────────────────────────────────────────
+.env
+.env.*
+data/
+.git/
+.venv/
+.streamlit/secrets.toml
+
+# ── Frontend (backend image only) ─────────────────────────────────────────────
+frontend/
+requirements.txt
+
+# ── Dev / build artifacts ─────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# ── Docs & config not needed at runtime ───────────────────────────────────────
+docs/
+docker/
+*.md
+Makefile
+pyproject.toml
+render.yaml
+.gitignore

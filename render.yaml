@@ -35,3 +35,8 @@ services:
       # Get key from: dashboard.cohere.com → API Keys
       - key: COHERE_API_KEY
         sync: false
+
+      # Bearer token — protects /query and /monitor endpoints
+      # Generate: python -c "import secrets; print(secrets.token_hex(32))"
+      - key: API_BEARER_TOKEN
+        sync: false

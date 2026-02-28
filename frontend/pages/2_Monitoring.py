@@ -17,11 +17,17 @@ import streamlit as st
 
 from auth import require_auth, show_logout_button
 
-# Read API base URL from secrets, fall back to localhost for local dev
+# Read API base URL and optional bearer token from secrets
 try:
     API_BASE = st.secrets["api"]["base_url"]
 except Exception:
     API_BASE = "http://localhost:8000/api/v1"
+
+try:
+    _token = st.secrets["api"]["bearer_token"]
+    API_HEADERS = {"Authorization": f"Bearer {_token}"} if _token else {}
+except Exception:
+    API_HEADERS = {}
 
 # ---------------------------------------------------------------------------
 # Page config — must be first Streamlit call
@@ -148,7 +154,7 @@ st.markdown("""
 # Fetch data from API
 # ---------------------------------------------------------------------------
 try:
-    resp = requests.get(f"{API_BASE}/monitor/queries", timeout=5)
+    resp = requests.get(f"{API_BASE}/monitor/queries", headers=API_HEADERS, timeout=5)
     resp.raise_for_status()
     rows = resp.json()
 except requests.exceptions.ConnectionError:
@@ -262,6 +268,7 @@ if changes:
                 r = requests.post(
                     f"{API_BASE}/monitor/flag/{int(qid)}",
                     json={"flagged": flagged},
+                    headers=API_HEADERS,
                     timeout=5,
                 )
                 r.raise_for_status()

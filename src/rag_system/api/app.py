@@ -49,6 +49,8 @@ QDRANT_URL     = os.environ.get("QDRANT_URL") or None
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") or None
 # Cohere Rerank API — replaces local sentence-transformers cross-encoder
 COHERE_API_KEY = os.environ.get("COHERE_API_KEY") or None
+# API bearer token — protects /query and /monitor endpoints; unset = auth disabled (local dev)
+API_BEARER_TOKEN = os.environ.get("API_BEARER_TOKEN") or None
 
 
 # ---------------------------------------------------------------------------
@@ -58,6 +60,11 @@ COHERE_API_KEY = os.environ.get("COHERE_API_KEY") or None
 async def lifespan(app: FastAPI):
     """Load the RAG pipeline on startup, clean up on shutdown."""
     logger.info("Initialising RAG pipeline...")
+    app.state.api_bearer_token = API_BEARER_TOKEN
+    if API_BEARER_TOKEN:
+        logger.info("API bearer-token auth enabled")
+    else:
+        logger.warning("API_BEARER_TOKEN not set — auth disabled (open access)")
     init_db()
     logger.info("Monitoring database ready")
     app.state.generator = ResponseGenerator.from_config(

@@ -22,7 +22,7 @@ from ..embeddings.embedding_model import EmbeddingConfig
 from ..vectorstore.store import QdrantConfig
 from ..retrieval.retriever import VectorRetriever, RetrieverConfig
 from ..retrieval.hybrid_search import HybridSearch, HybridConfig
-from ..retrieval.reranker import CrossEncoderReranker, RerankerConfig
+from ..retrieval.reranker import CohereReranker, RerankerConfig
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class ResponseGenerator:
         llm_client: LLMClient,
         retriever: VectorRetriever,
         hybrid_search: HybridSearch,
-        reranker: CrossEncoderReranker,
+        reranker: CohereReranker,
         context_chunks: int = 5,
     ):
         self.llm = llm_client
@@ -87,11 +87,13 @@ class ResponseGenerator:
         qdrant_port: int = 6333,
         qdrant_url: Optional[str] = None,
         qdrant_api_key: Optional[str] = None,
+        cohere_api_key: Optional[str] = None,
         context_chunks: int = 5,
     ) -> "ResponseGenerator":
         """Convenience factory — builds the full pipeline from just an API key and chunks path.
 
         For Qdrant Cloud pass qdrant_url + qdrant_api_key; host/port are then ignored.
+        For reranking pass cohere_api_key; if omitted, top-k hybrid results are used as-is.
         """
 
         # Load chunks for BM25
@@ -114,7 +116,7 @@ class ResponseGenerator:
         )
 
         hybrid = HybridSearch(all_chunks, config=HybridConfig(top_k=10))
-        reranker = CrossEncoderReranker(config=RerankerConfig(top_k=context_chunks))
+        reranker = CohereReranker(api_key=cohere_api_key, config=RerankerConfig(top_k=context_chunks))
 
         return cls(llm_client, retriever, hybrid, reranker, context_chunks)
 

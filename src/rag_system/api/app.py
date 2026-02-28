@@ -47,6 +47,8 @@ QDRANT_PORT    = int(os.environ.get("QDRANT_PORT", "6333"))
 # Qdrant Cloud — when QDRANT_URL is set, QDRANT_HOST / QDRANT_PORT are ignored
 QDRANT_URL     = os.environ.get("QDRANT_URL") or None
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") or None
+# Cohere Rerank API — replaces local sentence-transformers cross-encoder
+COHERE_API_KEY = os.environ.get("COHERE_API_KEY") or None
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +67,7 @@ async def lifespan(app: FastAPI):
         qdrant_port=QDRANT_PORT,
         qdrant_url=QDRANT_URL,
         qdrant_api_key=QDRANT_API_KEY,
+        cohere_api_key=COHERE_API_KEY,
     )
     logger.info("RAG pipeline ready")
     yield

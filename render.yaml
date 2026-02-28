@@ -30,3 +30,8 @@ services:
 
       - key: QDRANT_API_KEY
         sync: false
+
+      # Cohere Rerank API (free tier: 1,000 calls/month)
+      # Get key from: dashboard.cohere.com → API Keys
+      - key: COHERE_API_KEY
+        sync: false

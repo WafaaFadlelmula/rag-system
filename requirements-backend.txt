@@ -4,9 +4,8 @@
 # Does NOT include docling (PDF parsing — ingestion pipeline only)
 # or streamlit (frontend only).
 #
-# Memory note: sentence-transformers pulls in PyTorch CPU (~350 MB).
-# The total RSS at runtime is ~500-700 MB.
-# Render free tier = 512 MB — recommend the Starter plan ($7/mo) to be safe.
+# Memory note: sentence-transformers (PyTorch) removed in favour of Cohere Rerank API.
+# Total RSS at runtime is now ~120 MB — well within Render's free 512 MB tier.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # API framework
@@ -22,7 +21,7 @@ qdrant-client==1.16.2
 
 # Retrieval
 rank-bm25==0.2.2
-sentence-transformers==5.2.3
+cohere==5.15.0
 numpy==2.2.6
 
 # Data validation

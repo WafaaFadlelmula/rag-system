@@ -1,15 +1,14 @@
 """
-Cross-Encoder Reranker
-========================
-Uses a sentence-transformers cross-encoder to rerank hybrid search results.
+Cohere Reranker
+================
+Uses the Cohere Rerank API to rerank hybrid search results.
 
-Cross-encoders are more accurate than bi-encoders for relevance scoring
-because they see the query AND the document together, not separately.
+Replaces the local cross-encoder (sentence-transformers / PyTorch) to cut
+memory usage from ~600 MB to ~120 MB — making it viable on Render's free
+512 MB tier.
 
-Model used: cross-encoder/ms-marco-MiniLM-L-6-v2
-  - Fast, small (~80MB), runs on CPU
-  - Trained on MS MARCO passage ranking
-  - Returns a relevance score (higher = more relevant)
+Cohere free tier: 1,000 rerank calls/month.
+Model: rerank-v3.5
 """
 
 from __future__ import annotations
@@ -23,43 +22,30 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class RerankerConfig:
-    # Hugging Face cross-encoder model
-    model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-
-    # Final number of results to return after reranking
+    model: str = "rerank-v3.5"
     top_k: int = 5
-
-    # Max character length of text sent to reranker (avoids slow inference on huge chunks)
     max_text_length: int = 512
 
 
-class CrossEncoderReranker:
+class CohereReranker:
     """
-    Reranks a list of candidate chunks using a cross-encoder model.
-    Downloads the model on first use (~80MB, cached to ~/.cache/huggingface/).
+    Reranks candidates using the Cohere Rerank API.
+    Falls back to returning top-k hybrid results unchanged if no API key is set.
 
     Usage:
-        reranker = CrossEncoderReranker()
+        reranker = CohereReranker(api_key="...")
         results = reranker.rerank(query, candidates)
     """
 
-    def __init__(self, config: Optional[RerankerConfig] = None):
+    def __init__(self, api_key: Optional[str], config: Optional[RerankerConfig] = None):
         self.cfg = config or RerankerConfig()
-        self._model = None   # lazy load on first use
-
-    def _load_model(self):
-        """Lazy-load the cross-encoder model."""
-        if self._model is None:
-            try:
-                from sentence_transformers import CrossEncoder
-                logger.info(f"Loading cross-encoder: {self.cfg.model_name}")
-                self._model = CrossEncoder(self.cfg.model_name)
-                logger.info("Cross-encoder loaded")
-            except ImportError:
-                raise ImportError(
-                    "sentence-transformers is required for reranking.\n"
-                    "Install with: uv add sentence-transformers"
-                )
+        self._client = None
+        if api_key:
+            import cohere
+            self._client = cohere.Client(api_key=api_key)
+            logger.info("Cohere reranker initialised")
+        else:
+            logger.warning("COHERE_API_KEY not set — reranking will be skipped")
 
     def rerank(self, query: str, candidates: list[dict], top_k: int = None) -> list[dict]:
         """
@@ -67,7 +53,7 @@ class CrossEncoderReranker:
 
         Args:
             query: Original user query
-            candidates: List of chunk dicts (from hybrid search or vector search)
+            candidates: List of chunk dicts (from hybrid search)
             top_k: Override default top_k from config
 
         Returns:
@@ -78,29 +64,31 @@ class CrossEncoderReranker:
             return []
 
         k = top_k if top_k is not None else self.cfg.top_k
-        self._load_model()
 
-        # Prepare (query, passage) pairs for the cross-encoder
-        pairs = [
-            (query, c["text"][: self.cfg.max_text_length])
-            for c in candidates
-        ]
+        if self._client is None:
+            # No API key — return top-k from hybrid results as-is
+            for c in candidates:
+                c.setdefault("rerank_score", round(float(c.get("hybrid_score", 0.0)), 4))
+            return candidates[:k]
 
-        logger.info(f"Reranking {len(pairs)} candidates...")
-        scores = self._model.predict(pairs)
+        docs = [c["text"][: self.cfg.max_text_length] for c in candidates]
+        logger.info(f"Reranking {len(docs)} candidates via Cohere API...")
 
-        # Attach scores and sort
-        scored = []
-        for chunk, score in zip(candidates, scores):
-            c = dict(chunk)
-            c["rerank_score"] = round(float(score), 4)
-            scored.append(c)
+        response = self._client.rerank(
+            model=self.cfg.model,
+            query=query,
+            documents=docs,
+            top_n=k,
+        )
 
-        scored.sort(key=lambda x: x["rerank_score"], reverse=True)
-        top = scored[:k]
+        ranked = []
+        for r in response.results:
+            c = dict(candidates[r.index])
+            c["rerank_score"] = round(r.relevance_score, 4)
+            ranked.append(c)
 
         logger.info(
-            f"Reranking complete. Top score: {top[0]['rerank_score']:.4f}, "
-            f"Bottom score: {top[-1]['rerank_score']:.4f}"
+            f"Reranking complete. Top score: {ranked[0]['rerank_score']:.4f}, "
+            f"Bottom score: {ranked[-1]['rerank_score']:.4f}"
         )
-        return top
+        return ranked

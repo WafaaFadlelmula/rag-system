@@ -17,7 +17,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** system built for the
 | Embeddings | OpenAI `text-embedding-3-small` |
 | Vector Database | [Qdrant](https://qdrant.tech/) (Docker or Qdrant Cloud) |
 | Keyword Search | BM25 (`rank-bm25`) |
-| Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Reranking | Cohere `rerank-v3.5` API (free tier) |
 | LLM | OpenAI `gpt-4o-mini` |
 | API | FastAPI + Uvicorn |
 | Frontend | Streamlit (multipage) |
@@ -50,7 +50,7 @@ rag-system/
 │   ├── retrieval/            # Retrieval pipeline
 │   │   ├── retriever.py      # Vector search
 │   │   ├── hybrid_search.py  # BM25 + RRF fusion
-│   │   └── reranker.py       # Cross-encoder reranker
+│   │   └── reranker.py       # Cohere Rerank API client
 │   ├── generation/           # LLM answer generation
 │   │   ├── llm_client.py     # OpenAI GPT-4o-mini client
 │   │   ├── response_generator.py  # Full RAG pipeline
@@ -349,6 +349,14 @@ The system is split into two independently deployed services.
 
 The FastAPI backend is deployed on [Render](https://render.com) using `render.yaml`. Configuration is picked up automatically when you connect the repo.
 
+**Memory constraint — why Cohere Rerank API is used**
+
+The original pipeline used a local `sentence-transformers` cross-encoder for reranking, which loads PyTorch (~350 MB) at startup. Combined with the rest of the dependencies, the server exceeded Render's free tier 512 MB RAM limit and was killed on every cold start.
+
+The fix was to replace the local model with the **Cohere Rerank API** (`rerank-v3.5`). The model runs on Cohere's servers — the app sends an HTTP request and receives relevance scores. This drops the server's memory footprint from ~600 MB to ~120 MB, making it viable on the free tier. Reranking quality is equivalent or better.
+
+Cohere free tier: **1,000 rerank calls/month** — sufficient for a project demo.
+
 **Environment variables to set in the Render dashboard:**
 
 | Variable | Description |
@@ -356,6 +364,7 @@ The FastAPI backend is deployed on [Render](https://render.com) using `render.ya
 | `OPENAI_API_KEY` | Your OpenAI key |
 | `QDRANT_URL` | Qdrant Cloud cluster URL |
 | `QDRANT_API_KEY` | Qdrant Cloud API key |
+| `COHERE_API_KEY` | Cohere Rerank API key (free at dashboard.cohere.com) |
 | `CHUNKS_DATA_PATH` | Path to chunks.json (see below) |
 
 **Sensitive data — chunks.json**

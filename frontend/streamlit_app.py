@@ -316,7 +316,7 @@ st.markdown("""
 <div class="rag-header">
     <h1>🔬 ECOICE Chatbot Assistant</h1>
     <p>Powered by GPT-4o-mini &nbsp;·&nbsp; Qdrant Vector DB &nbsp;·&nbsp;
-       Hybrid Search &nbsp;·&nbsp; Cross-encoder Reranking</p>
+       Hybrid Search &nbsp;·&nbsp; Cohere Reranking</p>
 </div>
 """, unsafe_allow_html=True)
 

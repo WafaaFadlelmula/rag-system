@@ -143,16 +143,16 @@ make vectordb-up
 Run each step in order the first time. After that, only re-run steps when your documents change.
 
 ```bash
-# Step 1 — Parse PDFs with Docling (AI-powered, ~500MB models downloaded once)
+# Step 1: Parse PDFs with Docling (AI-powered, ~500MB models downloaded once)
 make ingest
 
-# Step 2 — Chunk documents (hybrid semantic + fixed-size)
+# Step 2: Chunk documents (hybrid semantic + fixed-size)
 make chunk
 
-# Step 3 — Generate OpenAI embeddings (~$0.003 for 428 chunks)
+# Step 3: Generate OpenAI embeddings (~$0.003 for 428 chunks)
 make embed
 
-# Step 4 — Load embeddings into Qdrant
+# Step 4: Load embeddings into Qdrant
 make populate
 
 # Or run all pipeline steps at once
@@ -166,17 +166,17 @@ make pipeline
 You need two terminals:
 
 ```bash
-# Terminal 1 — FastAPI backend (port 8000)
+# Terminal 1: FastAPI backend (port 8000)
 make serve
 
-# Terminal 2 — Streamlit frontend (port 8501)
+# Terminal 2: Streamlit frontend (port 8501)
 make streamlit
 ```
 
 Then open **http://localhost:8501** in your browser.
 
-- **Chat** — main page, ask questions over the documents
-- **Monitoring** — second page in the sidebar, shows the query log and cost dashboard
+- **Chat**: Main page, ask questions over the documents
+- **Monitoring**: Second page in the sidebar, shows the query log and cost dashboard
 
 The interactive API docs are available at **http://localhost:8000/docs**.
 
@@ -202,11 +202,11 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ```json
 {
-  "question": "What is the power consumption of the C-PON system?",
-  "answer": "The C-PON system power consumption increases with traffic load...",
+  "question": "What is the power consumption of the system?",
+  "answer": "The system power consumption increases with traffic load...",
   "sources": [
     {
-      "source_file": "MS7_ECOICE Report Final Draft",
+      "source_file": "MS7 Report Final Draft",
       "headers": ["5.2 Power Consumption Measurement"],
       "rerank_score": 7.71
     }
@@ -245,13 +245,13 @@ Every query is automatically logged to a local SQLite database (`data/monitoring
 
 Open the **Monitoring** page from the Streamlit sidebar. It shows:
 
-- Summary metrics — total queries, cumulative cost, average latency, average reranker score, flagged count
+- Summary metrics: Total queries, cumulative cost, average latency, average reranker score, flagged count
 - Latency and reranker score charts over time
 - Full query log table with a **Flag for review** toggle per row
 
 ### Flag for review
 
-Check the **Flag** box next to any query in the table and click **Save flag changes**. Flagged queries are highlighted and counted in the summary bar — useful for identifying answers that need prompt or retrieval tuning.
+Check the **Flag** box next to any query in the table and click **Save flag changes**. Flagged queries are highlighted and counted in the summary bar, useful for identifying answers that need prompt or retrieval tuning.
 
 ### Monitoring API endpoints
 
@@ -262,7 +262,7 @@ Check the **Flag** box next to any query in the table and click **Save flag chan
 
 ### Database path
 
-The default path is `data/monitoring/queries.db` relative to the project root. Override it with the `MONITORING_DB_PATH` environment variable — useful when running on a cloud host with a persistent volume.
+The default path is `data/monitoring/queries.db` relative to the project root. Override it with the `MONITORING_DB_PATH` environment variable, useful when running on a cloud host with a persistent volume.
 
 ---
 
@@ -292,9 +292,9 @@ make test             # Run tests
 
 The system uses a 3-stage retrieval approach for maximum accuracy:
 
-1. **Vector Search** — embeds the query with OpenAI and finds the top 20 semantically similar chunks from Qdrant
-2. **BM25 + RRF** — performs keyword search in parallel and fuses both result lists using Reciprocal Rank Fusion, reducing to top 10
-3. **Cross-encoder Reranking** — a local `ms-marco-MiniLM-L-6-v2` model scores each (query, chunk) pair together for maximum precision, returning the final top-k
+1. **Vector Search**: Embeds the query with OpenAI and finds the top 20 semantically similar chunks from Qdrant
+2. **BM25 + RRF**: Performs keyword search in parallel and fuses both result lists using Reciprocal Rank Fusion, reducing to top 10
+3. **Cross-encoder Reranking**: A local `ms-marco-MiniLM-L-6-v2` model scores each (query, chunk) pair together for maximum precision, returning the final top-k
 
 This hybrid approach is particularly effective for technical documents where both semantic meaning and exact terminology (e.g. "C-PON", "DT15", "OLM") matter.
 
@@ -304,9 +304,9 @@ This hybrid approach is particularly effective for technical documents where bot
 
 Documents are chunked using a hybrid strategy:
 
-- **Semantic** — split on markdown headers (`##`, `###`) to respect document structure
-- **Merged** — sections smaller than 100 tokens are merged with neighbours to avoid tiny chunks
-- **Fixed-split** — sections larger than 800 tokens are split with 150-token overlap, snapping to sentence boundaries
+- **Semantic**: Split on markdown headers (`##`, `###`) to respect document structure
+- **Merged**: Sections smaller than 100 tokens are merged with neighbours to avoid tiny chunks
+- **Fixed-split**: Sections larger than 800 tokens are split with 150-token overlap, snapping to sentence boundaries
 
 Default settings (tuned for `text-embedding-3-small`):
 
@@ -347,17 +347,17 @@ make ingest && make chunk && make embed && make populate
 
 The system is split into two independently deployed services.
 
-### Backend — Render
+### Backend: Render
 
 The FastAPI backend is deployed on [Render](https://render.com) using `render.yaml`. Configuration is picked up automatically when you connect the repo.
 
-**Memory constraint — why Cohere Rerank API is used**
+**Memory constraint: Why Cohere Rerank API is used**
 
 The original pipeline used a local `sentence-transformers` cross-encoder for reranking, which loads PyTorch (~350 MB) at startup. Combined with the rest of the dependencies, the server exceeded Render's free tier 512 MB RAM limit and was killed on every cold start.
 
-The fix was to replace the local model with the **Cohere Rerank API** (`rerank-v3.5`). The model runs on Cohere's servers — the app sends an HTTP request and receives relevance scores. This drops the server's memory footprint from ~600 MB to ~120 MB, making it viable on the free tier. Reranking quality is equivalent or better.
+The fix was to replace the local model with the **Cohere Rerank API** (`rerank-v3.5`). The model runs on Cohere's servers, the app sends an HTTP request and receives relevance scores. This drops the server's memory footprint from ~600 MB to ~120 MB, making it viable on the free tier. Reranking quality is equivalent or better.
 
-Cohere free tier: **1,000 rerank calls/month** — sufficient for a project demo.
+Cohere free tier: **1,000 rerank calls/month**.
 
 **Environment variables to set in the Render dashboard:**
 
@@ -368,14 +368,14 @@ Cohere free tier: **1,000 rerank calls/month** — sufficient for a project demo
 | `QDRANT_API_KEY` | Qdrant Cloud API key |
 | `COHERE_API_KEY` | Cohere Rerank API key (free at dashboard.cohere.com) |
 | `CHUNKS_DATA_PATH` | Path to chunks.json (see below) |
-| `API_BEARER_TOKEN` | Bearer token protecting `/query` and `/monitor` endpoints — generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `API_BEARER_TOKEN` | Bearer token protecting `/query` and `/monitor` endpoints, generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
 
-**Sensitive data — chunks.json**
+**Sensitive data: chunks.json**
 
 `chunks.json` contains processed document text and is gitignored. On Render, use **Secret Files**:
 
 1. Render dashboard → your service → **Environment** → **Secret Files**
-2. Filename: `chunks.json` — Render mounts it at `/etc/secrets/chunks.json`
+2. Filename: `chunks.json`: Render mounts it at `/etc/secrets/chunks.json`
 3. Set `CHUNKS_DATA_PATH=/etc/secrets/chunks.json` in environment variables
 
 The app auto-detects `/etc/secrets/chunks.json` even if the env var is not set.
@@ -387,7 +387,7 @@ Build:  pip install -r requirements-backend.txt
 Start:  PYTHONPATH=src python scripts/serve.py
 ```
 
-### Frontend — Streamlit Community Cloud
+### Frontend: Streamlit Community Cloud
 
 The Streamlit frontend is deployed on [Streamlit Community Cloud](https://share.streamlit.io).
 
@@ -405,15 +405,15 @@ base_url = "https://your-render-service.onrender.com/api/v1"
 bearer_token = "your-api-bearer-token"
 ```
 
-Secrets added after deployment take effect immediately on the next reboot — no redeploy needed.
+Secrets added after deployment take effect immediately on the next reboot.
 
 ### Authentication
 
 Two layers of authentication protect the system:
 
-1. **Streamlit login gate** (`frontend/auth.py`) — username/password form in front of all pages. Skipped automatically when `[auth]` is absent from secrets (local dev).
+1. **Streamlit login gate** (`frontend/auth.py`): username/password form in front of all pages. Skipped automatically when `[auth]` is absent from secrets (local dev).
 
-2. **FastAPI bearer token** — the `/query` and `/monitor` endpoints require an `Authorization: Bearer <token>` header. Set `API_BEARER_TOKEN` in the Render dashboard and the matching `bearer_token` in the Streamlit secrets. When `API_BEARER_TOKEN` is unset the backend runs in open mode (suitable for local dev only).
+2. **FastAPI bearer token**: The `/query` and `/monitor` endpoints require an `Authorization: Bearer <token>` header. Set `API_BEARER_TOKEN` in the Render dashboard and the matching `bearer_token` in the Streamlit secrets. When `API_BEARER_TOKEN` is unset the backend runs in open mode (suitable for local dev only).
 
 ### Qdrant Cloud
 
@@ -462,7 +462,7 @@ docker run -p 8000:8000 \
   rag-api
 ```
 
-The image is ~200 MB (no PyTorch). `chunks.json` is never baked into the image — always mount it at runtime via `-v`.
+The image is ~200 MB (no PyTorch). `chunks.json` is never baked into the image, always mount it at runtime via `-v`.
 
 ### Live URLs
 

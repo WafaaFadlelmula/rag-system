@@ -302,7 +302,7 @@ with st.sidebar:
             st.session_state.prefill = q
 
     st.divider()
-    if st.button("🗑️  Clear chat", use_container_width=True):
+    if st.button("Clear chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 

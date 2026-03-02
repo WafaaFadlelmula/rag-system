@@ -39,7 +39,7 @@ def show_logout_button() -> None:
     """
     if not _auth_configured():
         return
-    if st.button("🔒 Sign out", use_container_width=True):
+    if st.button("Sign out", use_container_width=True):
         st.session_state["authenticated"] = False
         st.rerun()
 

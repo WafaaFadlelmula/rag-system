@@ -271,7 +271,7 @@ with st.sidebar:
     st.divider()
 
     # Health check
-    with st.expander("⚡ System Status", expanded=False):
+    with st.expander("System Status", expanded=False):
         try:
             r = requests.get(f"{API_BASE}/health", headers=API_HEADERS, timeout=3)
             if r.status_code == 200:
@@ -287,7 +287,7 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("<p style='font-size:0.82rem; font-weight:600; color:#00BCD4;'>💡 Try asking:</p>",
+    st.markdown("<p style='font-size:0.82rem; font-weight:600; color:#00BCD4;'>Try asking:</p>",
                 unsafe_allow_html=True)
     suggested = [
         "What is C-PON?",
@@ -314,7 +314,7 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="rag-header">
-    <h1>🔬 ECOICE Chatbot Assistant</h1>
+    <h1>ECOICE Chatbot Assistant</h1>
     <p>Powered by GPT-4o-mini &nbsp;·&nbsp; Qdrant Vector DB &nbsp;·&nbsp;
        Hybrid Search &nbsp;·&nbsp; Cohere Reranking</p>
 </div>

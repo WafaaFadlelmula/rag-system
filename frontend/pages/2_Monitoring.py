@@ -118,7 +118,7 @@ st.markdown("""
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.markdown(
-        "<p style='font-size:0.9rem; font-weight:700; color:#00BCD4;'>📊 Monitoring</p>",
+        "<p style='font-size:0.9rem; font-weight:700; color:#00BCD4;'>Monitoring</p>",
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -129,7 +129,7 @@ with st.sidebar:
     st.divider()
 
     auto_refresh = st.toggle("Auto-refresh (30 s)", value=False)
-    if st.button("🔄 Refresh now", use_container_width=True):
+    if st.button("Refresh now", use_container_width=True):
         st.rerun()
 
     st.divider()
@@ -145,7 +145,7 @@ if auto_refresh:
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="monitor-header">
-    <h1>📊 Query Monitoring Dashboard</h1>
+    <h1>Query Monitoring Dashboard</h1>
     <p>Every query is automatically logged · Flag queries for review · Refresh to see new data</p>
 </div>
 """, unsafe_allow_html=True)
@@ -261,7 +261,7 @@ changes = {
 
 if changes:
     n = len(changes)
-    if st.button(f"💾 Save {n} flag change{'s' if n != 1 else ''}", type="primary"):
+    if st.button(f"Save {n} flag change{'s' if n != 1 else ''}", type="primary"):
         errors = []
         for qid, flagged in changes.items():
             try:

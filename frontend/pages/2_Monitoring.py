@@ -33,7 +33,7 @@ except Exception:
 # Page config — must be first Streamlit call
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Monitoring — ECOICE Assistant",
+    page_title="Monitoring ECOICE chatbot Assistant",
     page_icon="📊",
     layout="wide",
 )
